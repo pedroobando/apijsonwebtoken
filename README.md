@@ -1,4 +1,4 @@
-# sequelize-typescript-starter
+# apijsonwebtoken
 
 ## Installation
 ```
@@ -9,7 +9,3 @@ npm install
 ```
 npm start
 ```
-# apijsonwebtoken
-# apijsonwebtoken
-# apijsonwebtoken
-# apijsonwebtoken
