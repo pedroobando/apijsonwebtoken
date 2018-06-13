@@ -30,6 +30,9 @@ export class User extends Model<User> {
   @Column
   token: string;
 
+  @Column
+  password: string;
+
   // @BelongsToMany(() => Movie, () => MovieActor)
   // movies?: Movie[];
 
