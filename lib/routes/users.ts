@@ -1,7 +1,7 @@
 import {Router} from 'express';
 import {User} from '../models/User';
 import * as jwt from 'jsonwebtoken';
-// import {MovieUser} from '../models/MovieUser';
+import {verifyToken} from '../accesstoken';
 
 export const users = Router();
 
@@ -18,32 +18,31 @@ users.post('/authenticate', async (req, res, next) => {
       console.log(`User failed`);
       next();
     }
-    
+
     if (user && user.password !== req.body.password) {
       res.status(401).json({
         success: false,
         message: 'Autenticacion fallida. Password erroneo',
         token: null
-      });        
+      });
       console.log(`User failed`);
     } else {
-      const gettoken = jwt.sign({user}, req.app.get('superSecret'), (err, token) => {
-
-      });
-      res.status(202).json({
-        success: true,
-        message: 'Disfruta tu token',
-        token: gettoken
+      // const expToken = Math.floor(Date.now() / 1000) + (2 * 60);
+      jwt.sign({user}, req.app.get('superSecret'), { expiresIn: 2 * 60 }, (err, token) => {
+        res.status(202).json({
+          success: true,
+          message: 'Disfruta tu token.',
+          token
+        });
       });
       console.log(`User success`);
     }
-    
   } catch (e) {
     next(e);
   }
 });
 
-users.post('/', async (req, res, next) => {
+users.post('/', verifyToken, async (req, res, next) => {
   try {
     const user = await User.create(req.body);
     res.status(201).json({
@@ -56,18 +55,7 @@ users.post('/', async (req, res, next) => {
   }
 });
 
-// Users.post('/:id/movies/:movieId', async (req, res, next) => {
-//   try {
-//     await MovieUser.create({
-//       UserId: req.params['id'], movieId: req.params['movieId']
-//     });
-//     res.sendStatus(200);
-//   } catch (e) {
-//     next(e);
-//   }
-// });
-
-users.get('', verifyToken, async (req, res, next) => {
+users.get('', async (req, res, next) => {
   try {
     res.json(await User.scope(req.query['scope']).findAll());
   } catch (e) {
@@ -84,7 +72,7 @@ users.get('/:id', async (req, res, next) => {
   }
 });
 
-users.put('/:id', async (req, res, next) => {
+users.put('/:id', verifyToken, async (req, res, next) => {
   try {
     await User.update(req.body, {where: {id: req.params['id']}});
     res.sendStatus(200);
@@ -92,29 +80,3 @@ users.put('/:id', async (req, res, next) => {
     next(e);
   }
 });
-
-// Verify Token
-function verifyToken(req, res, next) {
-  try {
-    // Obtiene el valor de la auth en la cabezera
-    const token = req.body.token || req.query.token || req.headers['x-access-token'];
-    // const bearerHeader = req.headers['authorization'];
-    // Verifica si bearerHeader esta definido
-    if (typeof token !== 'undefined') {
-      // const bearer = bearerHeader.split(' ');
-      // const bearerToken = bearer[1];
-      // req.token = bearerToken;
-      jwt.verify(token, req.app.get('superSecret'), (err, decoded) => {
-        if (err) {
-          req.token = token;
-          res.sendStatus(403);
-          next(err);
-        }
-        next();
-    } else {
-      res.sendStatus(403);
-    }
-  } catch (err) {
-    next(err);
-  }
-}
