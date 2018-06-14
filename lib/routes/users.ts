@@ -19,23 +19,23 @@ users.post('/authenticate', async (req, res, next) => {
       next();
     }
     
-    if (user) {
-      if (user.password !== req.body.password) {
-        res.status(401).json({
-          success: false,
-          message: 'Autenticacion fallida. Password erroneo',
-          token: null
-        });        
-        console.log(`User failed`);
-      } else {
-        const gettoken = jwt.sign({user}, req.app.get('superSecret'));
-        res.status(202).json({
-          success: true,
-          message: 'Disfruta tu token',
-          token: gettoken
-        });
-        console.log(`User success`);
-      }
+    if (user && user.password !== req.body.password) {
+      res.status(401).json({
+        success: false,
+        message: 'Autenticacion fallida. Password erroneo',
+        token: null
+      });        
+      console.log(`User failed`);
+    } else {
+      const gettoken = jwt.sign({user}, req.app.get('superSecret'), (err, token) => {
+
+      });
+      res.status(202).json({
+        success: true,
+        message: 'Disfruta tu token',
+        token: gettoken
+      });
+      console.log(`User success`);
     }
     
   } catch (e) {
@@ -67,7 +67,7 @@ users.post('/', async (req, res, next) => {
 //   }
 // });
 
-users.get('', async (req, res, next) => {
+users.get('', verifyToken, async (req, res, next) => {
   try {
     res.json(await User.scope(req.query['scope']).findAll());
   } catch (e) {
@@ -92,3 +92,19 @@ users.put('/:id', async (req, res, next) => {
     next(e);
   }
 });
+
+// Verify Token
+function verifyToken(req, res, next) {
+  // Obtiene el valor de la auth en la cabezera
+  const bearerHeader = req.headers['authorization'];
+  // Verifica si bearerHeader esta definido
+  if (typeof bearerHeader !== 'undefined') {
+    const bearer = bearerHeader.split(' ');
+    const bearerToken = bearer[1];
+    req.token = bearerToken;
+    // next();
+  } else {
+    res.sendStatus(403);
+  }
+  next();
+}
