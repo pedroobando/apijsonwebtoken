@@ -95,16 +95,26 @@ users.put('/:id', async (req, res, next) => {
 
 // Verify Token
 function verifyToken(req, res, next) {
-  // Obtiene el valor de la auth en la cabezera
-  const bearerHeader = req.headers['authorization'];
-  // Verifica si bearerHeader esta definido
-  if (typeof bearerHeader !== 'undefined') {
-    const bearer = bearerHeader.split(' ');
-    const bearerToken = bearer[1];
-    req.token = bearerToken;
-    // next();
-  } else {
-    res.sendStatus(403);
+  try {
+    // Obtiene el valor de la auth en la cabezera
+    const token = req.body.token || req.query.token || req.headers['x-access-token'];
+    // const bearerHeader = req.headers['authorization'];
+    // Verifica si bearerHeader esta definido
+    if (typeof token !== 'undefined') {
+      // const bearer = bearerHeader.split(' ');
+      // const bearerToken = bearer[1];
+      // req.token = bearerToken;
+      jwt.verify(token, req.app.get('superSecret'), (err, decoded) => {
+        if (err) {
+          req.token = token;
+          res.sendStatus(403);
+          next(err);
+        }
+        next();
+    } else {
+      res.sendStatus(403);
+    }
+  } catch (err) {
+    next(err);
   }
-  next();
 }
