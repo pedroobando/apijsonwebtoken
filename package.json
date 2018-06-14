@@ -1,11 +1,10 @@
 {
-  "name": "sequelize-typescript-starter",
-  "version": "1.0.0",
-  "description": "",
+  "name": "apijwt",
+  "version": "0.0.1",
+  "description": "Aplicacion apirest - que autentica y autoriza al usuario.",
   "main": "index.js",
   "scripts": {
-    "start": "node --require ts-node/register index.ts",
-    "start2": "node dist/index.js",
+    "start": "node dist/index.js",
     "tsc": "node_modules/.bin/tsc",
     "tscw": "node_modules/.bin/tsc -w",
     "dev": "node_modules/.bin/nodemon dist/index.js"
@@ -16,6 +15,8 @@
     "bluebird": "^3.5.1",
     "body-parser": "^1.18.2",
     "express": "^4.16.2",
+    "jsonwebtoken": "^8.3.0",
+    "morgan": "^1.9.0",
     "reflect-metadata": "^0.1.10",
     "sequelize": "^4.37.5",
     "sequelize-typescript": "^1.0.0-alpha.1",
@@ -24,8 +25,8 @@
   },
   "devDependencies": {
     "@types/express": "^4.0.39",
+    "@types/jsonwebtoken": "^7.2.7",
     "@types/node": "^8.0.53",
-    "jsonwebtoken": "^8.3.0",
     "nodemon": "^1.17.5",
     "ts-node": "^3.3.0",
     "tslint": "^5.8.0",

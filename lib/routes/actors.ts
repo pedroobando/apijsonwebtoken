@@ -1,8 +1,33 @@
 import {Router} from 'express';
 import {Actor} from '../models/Actor';
 import {MovieActor} from '../models/MovieActor';
+import * as jwt from 'jsonwebtoken';
 
 export const actors = Router();
+
+actors.use((req, res, next) => {
+  // x-access-token: token , /api?token=token, form body
+  const token = req.body.token || req.query.token || req.headers['x-access-token'];
+
+  if (token) {
+    jwt.verify(token, req.app.get('superSecret'), (err, decoded) => {
+      if (err) {
+        return res.json({
+          success: false,
+          message: 'Error al autenticar el token'
+        });
+      } else {
+        req.decoded = decoded;
+        next();
+      }
+    });
+  } else {
+    return res.status(403).send({
+      success: false,
+      message: 'No token provided'
+    });
+  }
+});
 
 actors.post('/', async (req, res, next) => {
   try {

@@ -1,6 +1,10 @@
 import * as express from 'express';
 import * as bodyParser from 'body-parser';
 import * as errorhandler from 'strong-error-handler';
+
+import * as morgan from 'morgan';
+// import * as jwt from 'jsonwebtoken';
+
 import {movies} from './routes/movies';
 import {actors} from './routes/actors';
 import {users} from './routes/users';
@@ -12,6 +16,11 @@ app.use(bodyParser.urlencoded({extended: true}));
 
 // middleware for json body parsing
 app.use(bodyParser.json({limit: '5mb'}));
+
+// muestra las rutas en la consola
+app.use(morgan('dev'));
+
+app.set('superSecret', 'p4l4br4S3cr3t4');
 
 // enable corse for all origins
 app.use((req, res, next) => {

@@ -19,16 +19,10 @@ export class User extends Model<User> {
   login: string;
 
   @Column
-  firstName: string;
+  fullName: string;
 
   @Column
-  lastName: string;
-
-  @Column
-  role: string;
-
-  @Column
-  token: string;
+  role: enumRole;
 
   @Column
   password: string;
@@ -48,4 +42,10 @@ export class User extends Model<User> {
     args[0] = args[0] || 'defaultScope';
     return super.scope.call(this, ...args);
   }
+}
+
+export enum enumRole {
+  user  = 1,
+  admin = 2,
+  devel = 3
 }
