@@ -1,57 +1,48 @@
 import {Router} from 'express';
 import {User} from '../models/User';
-import * as jwt from 'jsonwebtoken';
 import {verifyToken} from '../accesstoken';
+// import * as vef from '../accesstoken';
+
+import * as userControllers from '../controllers/users';
 
 export const users = Router();
 
-users.post('/authenticate', async (req, res, next) => {
+users.post('/singup', async (req, res, next) => {
   try {
-    const user = await User.scope(req.query['scope']).findOne({where: {login: req.body.login}});
-    // console.log(`Usuario: ${user.login}`);
-    if (!user) {
-      res.status(401).json({
-        success: true,
-        message: 'Autenticacion fallida. Usuario no encontrado',
-        token: null
+    const singUp = userControllers.singUp(req, res, next);
+    singUp.then(resultado => {
+      res.status(resultado.statusCode).json({
+        success: resultado.success,
+        activeUser: resultado.user,
+        message: resultado.message
       });
-      console.log(`User failed`);
-      next();
-    }
-
-    if (user && user.password !== req.body.password) {
-      res.status(401).json({
-        success: false,
-        message: 'Autenticacion fallida. Password erroneo',
-        token: null
-      });
-      console.log(`User failed`);
-    } else {
-      // const expToken = Math.floor(Date.now() / 1000) + (2 * 60);
-      jwt.sign({user}, req.app.get('superSecret'), { expiresIn: 2 * 60 }, (err, token) => {
-        res.status(202).json({
-          success: true,
-          message: 'Disfruta tu token.',
-          token
-        });
-      });
-      console.log(`User success`);
-    }
-  } catch (e) {
-    next(e);
+      // console.log(resultado);
+    });
+  } catch (error) {
+    res.status(error.statusCode).json({
+      success: false,
+      message: `Error in ${error.message}`
+    });
   }
 });
 
-users.post('/', verifyToken, async (req, res, next) => {
+users.post('/singin', async (req, res, next) => {
   try {
-    const user = await User.create(req.body);
-    res.status(201).json({
-      success: true,
-      object: user
+    const singIn = userControllers.singIn(req, res, next);
+    singIn.then(resultado => {
+      res.status(resultado.statusCode).json({
+        success: resultado.success,
+        activeUser: resultado.user,
+        message: resultado.message,
+        token: resultado.token
+      });
+      // console.log(resultado);
     });
-    console.log(`User sucess`);
-  } catch (e) {
-    next(e);
+  } catch (error) {
+    res.status(error.statusCode).json({
+      success: false,
+      message: `Error in ${error.message}`
+    });
   }
 });
 

@@ -10,6 +10,10 @@ const port = process.env.PORT || 3000;
   createServer(app)
     .listen(
       port,
-      () => console.info(`Server running on port ${port}`)
+      () => {
+          console.info(`+---------------------------------------------+`);
+          console.info(`| ApiJsonWebToken running on Server port ${port} |`);
+          console.info(`+---------------------------------------------+`);
+        }
     );
 })();
