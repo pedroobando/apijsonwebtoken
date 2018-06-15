@@ -11,3 +11,7 @@ export function createToken(user) {
 
   return jwt.sign(payload, 'p4l4br4S3cr3t4');
 }
+
+export function isAuth(req, res, next) {
+
+}

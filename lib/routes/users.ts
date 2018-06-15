@@ -1,15 +1,37 @@
 import {Router} from 'express';
 import {User} from '../models/User';
 import {verifyToken} from '../accesstoken';
-// import * as vef from '../accesstoken';
 
 import * as userControllers from '../controllers/users';
-
 export const users = Router();
 
-users.post('/singup', async (req, res, next) => {
+users.post('/signup', async (req, res, next) => {
   try {
-    const singUp = userControllers.singUp(req, res, next);
+    let _errDatosFaltantes: string = `Usuario no creado indique lo(s) dato(s)`;
+    // Si no presenta el login
+    if (typeof req.body.login === 'undefined') {
+      _errDatosFaltantes += ' login';
+    }
+    // Si no presenta el password
+    if (typeof req.body.password === 'undefined') {
+      _errDatosFaltantes += ' password';
+    }
+    // Si no presenta el fullName
+    if (typeof req.body.fullName === 'undefined') {
+      _errDatosFaltantes += ' fullName';
+    }
+    if (typeof req.body.role === 'undefined') {
+      _errDatosFaltantes += ' role';
+    }
+    _errDatosFaltantes += ' del usuario.';
+    if (_errDatosFaltantes.length >= 53) {
+      return res.status(400).json({
+        success: false,
+        message: _errDatosFaltantes + ` total ${_errDatosFaltantes.length}`
+      });
+    }
+
+    const singUp = userControllers.signUp(req, res, next);
     singUp.then(resultado => {
       res.status(resultado.statusCode).json({
         success: resultado.success,
@@ -26,9 +48,9 @@ users.post('/singup', async (req, res, next) => {
   }
 });
 
-users.post('/singin', async (req, res, next) => {
+users.post('/signin', async (req, res, next) => {
   try {
-    const singIn = userControllers.singIn(req, res, next);
+    const singIn = userControllers.signIn(req, res, next);
     singIn.then(resultado => {
       res.status(resultado.statusCode).json({
         success: resultado.success,
