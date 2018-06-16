@@ -3,6 +3,7 @@ import {User} from '../models/User';
 import {verifyToken} from '../accesstoken';
 
 import * as userControllers from '../controllers/users';
+import { isAuth } from '../services';
 export const users = Router();
 
 users.post('/signup', async (req, res, next) => {
@@ -68,7 +69,7 @@ users.post('/signin', async (req, res, next) => {
   }
 });
 
-users.get('', async (req, res, next) => {
+users.get('', isAuth, async (req, res, next) => {
   try {
     res.json(await User.scope(req.query['scope']).findAll());
   } catch (e) {
