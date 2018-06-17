@@ -1,9 +1,10 @@
 import {Router} from 'express';
 import {Movie} from '../models/Movie';
+import { isAuth } from '../services';
 
 export const movies = Router();
 
-movies.post('/', async (req, res, next) => {
+movies.post('/', isAuth, async (req, res, next) => {
   try {
     const movie = await Movie.create(req.body);
     res.status(201).json(movie);
@@ -29,7 +30,7 @@ movies.get('/:id', async (req, res, next) => {
   }
 });
 
-movies.put('/:id', async (req, res, next) => {
+movies.put('/:id', isAuth, async (req, res, next) => {
   try {
     await Movie.update<Movie>(req.body, {where: {id: req.params['id']}});
     res.sendStatus(200);

@@ -56,18 +56,15 @@ export const signUp = async (req, res, next) => {
 export const signIn = async (req, res, next) => {
   try {
     let retValObject: object = [];
-    // console.log(req.body.login);
     await User.scope(req.query['scope']).findOne({where: {login: req.body.login}}).then(user => {
-      // if (!user) {
-      //   retValObject = {
-      //     statusCode: 404,
-      //     success: false,
-      //     message: 'Autenticacion fallida. Usuario no encontrado',
-      //     user: {}
-      //   };
-      // }
-
-      if (user && user.password !== req.body.password) {
+      if (!user) {
+        retValObject = {
+          statusCode: 401,
+          success: false,
+          message: 'Autenticacion fallida. Error en login o acceso del usuario.',
+          // user: {}
+        };          
+      } else if (user && user.password !== req.body.password) {
         retValObject = {
           statusCode: 401,
           success: false,
@@ -78,7 +75,7 @@ export const signIn = async (req, res, next) => {
         retValObject = {
           statusCode: 202,
           success: true,
-          message: 'Disfruta tu token.',
+          message: 'Autenticacion exitosa. Te has logueado correctamente.',
           token: createToken(user)
         };
       }
@@ -97,7 +94,6 @@ export const signIn = async (req, res, next) => {
       statusCode: e.statusCode,
       success: false,
       message: `Error in ${e.message} - controllers - users/singIn`,
-      // user: {}
     });
   }
 }

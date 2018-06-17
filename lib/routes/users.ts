@@ -1,6 +1,5 @@
 import {Router} from 'express';
 import {User} from '../models/User';
-import {verifyToken} from '../accesstoken';
 
 import * as userControllers from '../controllers/users';
 import { isAuth } from '../services';
@@ -86,7 +85,7 @@ users.get('/:id', async (req, res, next) => {
   }
 });
 
-users.put('/:id', verifyToken, async (req, res, next) => {
+users.put('/:id', isAuth, async (req, res, next) => {
   try {
     await User.update(req.body, {where: {id: req.params['id']}});
     res.sendStatus(200);

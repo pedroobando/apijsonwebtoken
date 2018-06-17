@@ -1,69 +1,89 @@
-// import {User} from '../models/User';
 import * as jwt from 'jsonwebtoken';
 import * as moment from 'moment';
+import { Promise } from 'bluebird';
 
 export function createToken(user) {
-  const payload = {
-    sub: user.login,
-    iat: moment().unix(),
-    exp: moment().add(1, 'hour').unix()
-  };
-
-  return jwt.sign(payload, 'p4l4br4S3cr3t4');
+  try {
+    const payload = {
+      sub: user.login,
+      iat: moment().unix(),
+      exp: moment().add(1, 'hour').unix()
+    };
+    return jwt.sign(payload, 'p4l4br4S3cr3t4');
+  } catch (error) {
+    return error.message;
+  }
 }
 
-// const token: string = req.body.token || req.query.token || req.headers['x-access-token'];
-// if (typeof token !== "undefined") {
-//   jwt.verify(token, req.app.get('superSecret'), (err, decoded) => {
-//     if (err) {
-//       res.status(403).json({
-//         success: false,
-//         message: 'Token Errado.',
-//       });
-//     } else {
-//       req.token = decoded;
-//       console.log(req.token);
-//       next();
-//     }
-//   });
-// } else {
-//   res.status(403).json({
-//     success: false,
-//     message: 'Token inexistente.',
-//   });
-// }
-
-export function isAuth(req, res, next) {
-  // req.body.token.split(" ")[1] || req.query.token.split(" ")[1] ||
-  const token: string = req.headers['authorization'].split(" ")[1];
-  if (typeof token === "undefined") {
-    return res.status(403).json({
-      message: 'No tiene autorización.'
-    });
-  }
-
-  jwt.verify(token, 'p4l4br4S3cr3t4', (err, decoded) => {
-    if (err) {
-      res.status(403).json({
+export function decodeToken(token) {
+  const decoded = new Promise((resolve, reject) => {
+    try {
+      if (typeof token === "undefined") {
+        reject({
+          statusCode: 403,
+          success: false,
+          message: 'Autenticacion fallida. No tiene autorización para acceder al sitio..',
+        });
+      }
+      jwt.verify(token, 'p4l4br4S3cr3t4', (err, payload) => {
+        if (err) {
+          reject({
+            statusCode: 403,
+            success: false,
+            message: 'Autenticacion fallida. No tiene autorización para acceder al sitio...',
+          });
+        }
+        if (payload.exp <= moment().unix()) {
+          reject({
+            statusCode: 401,
+            success: false,
+            message: 'Autenticacion fallida. No tiene autorización para acceder al sitio, ha vencido el tiempo de seccion.'
+          });
+        }
+        resolve({
+          statusCode: 202,
+          success: true,
+          message: 'Autenticacion exitosa. Tiene autorización para acceder al sitio.',
+          resolve: payload.sub
+        });
+      });
+      
+    } catch (error) {
+      reject({
+        statusCode: 500,
         success: false,
-        message: 'Token Errado.',
+        message: 'Invalid Token'
       });
-    } else if (decoded.exp <= moment().unix()) {
-      return res.status(401).json({
-        message: 'El token ha expirado.'
-      });
-    } else {
-      req.user = decoded.sub;
-      // console.log(req.token);
-      next();
     }
   });
+  return decoded;
+}
 
-  // const token = req.headers.authorization.split(" ")[1];
-  // const payload = jwt.decode(token, 'p4l4br4S3cr3t4');
-
-
-
-  // req.user = payload.sub;
-  next();
+export function isAuth(req, res, next) {
+  try {
+    if (!req.headers.authorization) {
+      return res.status(403).json({
+        success: false,
+        message: 'Autenticacion fallida. No tiene autorización para acceder al sitio.'
+      });
+    }
+    const token: string = req.headers['authorization'].split(" ")[1];
+    decodeToken(token)
+      .then(response => {
+        req.user = response;
+        next();
+      })
+      .catch(response => {
+        res.status(response.statusCode).json({
+          success: response.success,
+          message: response.message
+        });
+      });
+      
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
 }
