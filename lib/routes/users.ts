@@ -70,7 +70,8 @@ users.post('/signin', async (req, res, next) => {
 
 users.get('', isAuth, async (req, res, next) => {
   try {
-    res.json(await User.scope(req.query['scope']).findAll());
+    const userss = await User.scope(req.query['scope']).findAll();
+    res.json(userss);
   } catch (e) {
     next(e);
   }

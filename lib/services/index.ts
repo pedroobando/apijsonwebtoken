@@ -47,7 +47,7 @@ export function decodeToken(token) {
           resolve: payload.sub
         });
       });
-      
+
     } catch (error) {
       reject({
         statusCode: 500,
@@ -66,6 +66,7 @@ export function isAuth(req, res, next) {
         success: false,
         message: 'Autenticacion fallida. No tiene autorización para acceder al sitio.'
       });
+      return;
     }
     const token: string = req.headers['authorization'].split(" ")[1];
     decodeToken(token)
@@ -79,9 +80,9 @@ export function isAuth(req, res, next) {
           message: response.message
         });
       });
-      
+
   } catch (error) {
-    res.status(500).json({
+    res.status(501).json({
       success: false,
       message: error.message
     });
